@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, unicode_literals
+
 from django.db import models
 
 from solo.models import SingletonModel
@@ -8,7 +10,7 @@ class SiteConfiguration(SingletonModel):
     maintenance_mode = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return u"Site Configuration"
+        return "Site Configuration"
 
     class Meta:
         verbose_name = "Site Configuration"

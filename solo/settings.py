@@ -1,7 +1,8 @@
+from __future__ import absolute_import, division, unicode_literals
+
 from django.conf import settings
 
-GET_SOLO_TEMPLATE_TAG_NAME = getattr(settings,
-    'GET_SOLO_TEMPLATE_TAG_NAME', 'get_solo')
+GET_SOLO_TEMPLATE_TAG_NAME = getattr(settings, 'GET_SOLO_TEMPLATE_TAG_NAME', 'get_solo')
 
 # The cache that should be used, e.g. 'default'. Refers to Django CACHES setting.
 # Set to None to disable caching.

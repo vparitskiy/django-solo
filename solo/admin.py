@@ -1,19 +1,22 @@
+from __future__ import absolute_import, division, unicode_literals
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
+from django.utils.encoding import force_unicode
+from django.utils.translation import ugettext_lazy as _
 
 from solo.models import DEFAULT_SINGLETON_INSTANCE_ID
-
-try:
-    from django.utils.encoding import force_unicode
-except ImportError:
-    from django.utils.encoding import force_text as force_unicode 
-from django.utils.translation import ugettext as _
 
 
 class SingletonModelAdmin(admin.ModelAdmin):
     object_history_template = "admin/solo/object_history.html"
     change_form_template = "admin/solo/change_form.html"
+
+    def __init__(self, *args, **kwargs):
+        super(SingletonModelAdmin, self).__init__(*args, **kwargs)
+        self.model._meta.verbose_name_plural = self.model._meta.verbose_name
 
     def has_add_permission(self, request):
         return False
@@ -22,41 +25,25 @@ class SingletonModelAdmin(admin.ModelAdmin):
         return False
 
     def get_urls(self):
-        urls = super(SingletonModelAdmin, self).get_urls()
-
-        # _meta.model_name only exists on Django>=1.6 -
-        # on earlier versions, use module_name.lower()
-        try:
-            model_name = self.model._meta.model_name
-        except AttributeError:
-            model_name = self.model._meta.module_name.lower()
-
-        self.model._meta.verbose_name_plural = self.model._meta.verbose_name
-        url_name_prefix = '%(app_name)s_%(model_name)s' % {
-            'app_name': self.model._meta.app_label,
-            'model_name': model_name,
-        }
-        custom_urls = [
-            url(r'^history/$',
-                self.admin_site.admin_view(self.history_view),
-                {'object_id': str(self.singleton_instance_id)},
-                name='%s_history' % url_name_prefix),
-            url(r'^$',
-                self.admin_site.admin_view(self.change_view),
-                {'object_id': str(self.singleton_instance_id)},
-                name='%s_change' % url_name_prefix),
+        kwargs = {'object_id': str(self.singleton_instance_id)}
+        url_prefix = '{}_{}'.format(self.model._meta.app_label, self.model._meta.model_name)
+        urls = [
+            url(
+                r'^history/$', self.admin_site.admin_view(self.history_view), kwargs,
+                name='{}_history'.format(url_prefix)
+            ),
+            url(r'^$', self.admin_site.admin_view(self.change_view), kwargs, name='{}_change'.format(url_prefix)),
         ]
-        # By inserting the custom URLs first, we overwrite the standard URLs.
-        return custom_urls + urls
+        return urls + super(SingletonModelAdmin, self).get_urls()
 
     def response_change(self, request, obj):
-        msg = _('%(obj)s was changed successfully.') % {'obj': force_unicode(obj)}
+        msg = _('{} was changed successfully.').format(force_unicode(obj))
         if '_continue' in request.POST:
-            self.message_user(request, msg + ' ' + _('You may edit it again below.'))
+            self.message_user(request, '{} {}'.format(msg, _('You may edit it again below.')))
             return HttpResponseRedirect(request.path)
         else:
             self.message_user(request, msg)
-            return HttpResponseRedirect("../../")
+            return redirect('admin:index')
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         if object_id == str(self.singleton_instance_id):
