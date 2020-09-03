@@ -1,9 +1,7 @@
-from __future__ import absolute_import, division, unicode_literals
-
-"""
-django-solo helps working with singletons: things like global settings that you want to edit from the admin site.
+"""django-solo helps working with singletons: things like global settings that you want to edit from the admin site.
 """
 
-__version__ = '1.1.3-1'
+__version__ = '1.1.3'
+__doc__ = 'Django Solo helps working with singletons'
 
 default_app_config = 'solo.apps.SoloAppConfig'
