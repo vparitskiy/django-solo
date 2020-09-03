@@ -90,7 +90,7 @@ class SiteConfiguration(SingletonModel):
 Installation
 ------------
 
-This application requires Django >= 1.10
+This application requires Django >= 2.2.16
 
 * Install the package using `pip install django-solo`
 * Add ``solo`` or ``solo.apps.SoloAppConfig`` to your ``INSTALLED_APPS`` setting.
